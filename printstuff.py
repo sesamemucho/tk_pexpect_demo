@@ -37,6 +37,8 @@ class DoPrint():
           self.mode = 'print'
         elif cmd.startswith('pause'):
           self.mode = 'pause'
+        elif cmd.startswith('print'):
+          self.mode = 'print'
         elif cmd.startswith('quit'):
           return
       else:

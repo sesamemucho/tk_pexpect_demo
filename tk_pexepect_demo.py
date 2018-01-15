@@ -36,6 +36,9 @@ class TkPexpect():
     self.commands_to_expect = queue.Queue()
 
     self.num_coffees = tk.StringVar()
+    self.num_coffees.set("cups of coffee: 0")
+
+    self.print_mode = 'print'
 
     # Title the app
     self.topwin.title("Tk/Pexpect demo")
@@ -45,7 +48,7 @@ class TkPexpect():
 
   def do_interaction(self):
     #logfile = QueueIO(self.q)
-    child = pexpect.spawn("./printstuff.py", encoding='utf-8')
+    child = pexpect.spawn("./printstuff.py", encoding='utf-8', echo=False)
     #child.logfile_read = sys.stdout
     child.logfile_read = QueueIO(self.q)
     num_coffee = 0
@@ -54,7 +57,7 @@ class TkPexpect():
       #index = child.expect([r'(?i)coffee', ])
       if index == 0:
         num_coffee += 1
-        self.num_coffees.set(f"cups: {num_coffee}")
+        self.num_coffees.set(f"cups of coffee: {num_coffee}")
         #self.q.put(f"Coffees = {num_coffee}\n")
       elif index == 1:
         try:
@@ -96,7 +99,14 @@ class TkPexpect():
     self.commands_to_expect.put('fast')
 
   def _pause(self):
-    pass
+    if self.print_mode == 'print':
+      self.commands_to_expect.put('pause')
+      self.print_mode = 'pause'
+      self.pausetext.config(text='Print')
+    else:
+      self.commands_to_expect.put('print')
+      self.pausetext.config(text='Pause')
+      self.print_mode = 'print'
 
   def init_gui(self):
     appframe = ttk.LabelFrame(self.topwin, text="TkPexpect")
@@ -119,11 +129,17 @@ class TkPexpect():
     self.fasttext = ttk.Button(appframe, text="Fast", command=self._fast)
     self.fasttext.grid(column=2, row=1)
 
+    self.pausetext = ttk.Button(appframe, text="Pause", command=self._pause)
+    self.pausetext.grid(column=3, row=1)
+
+    self.quit = ttk.Button(appframe, text="Quit", command=self._quit)
+    self.quit.grid(column=4, row=1)
+
     self.coffee = tk.Label(appframe, textvariable=self.num_coffees)
-    self.coffee.grid(column=3, row=1)
+    self.coffee.grid(column=1, row=2, columnspan=3)
 
     self.logbox = scrolledtext.ScrolledText(appframe, width=70, height=20)
-    self.logbox.grid(column=0, row=3, sticky='EW', columnspan=4)
+    self.logbox.grid(column=0, row=4, sticky='EW', columnspan=5)
 
     self.update()
 
